@@ -6,10 +6,7 @@ import com.ifi.trainer_api.service.TrainerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.*;
 
@@ -76,4 +73,15 @@ public class TrainerControllerTest {
 
         assertNotNull(pathVariableAnnotation);
     }
+
+    @Test
+    void createTrainer_shouldBeAnnotated() throws NoSuchMethodException {
+        var createTrainer = TrainerController.class.getDeclaredMethod("createTrainer", Trainer.class);
+        var postMapping = createTrainer.getAnnotation(PostMapping.class);
+
+        assertNotNull(postMapping);
+        assertArrayEquals(new String[]{"/"}, postMapping.value());
+    }
+
+
 }

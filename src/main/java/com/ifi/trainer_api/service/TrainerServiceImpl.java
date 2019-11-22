@@ -36,4 +36,10 @@ public class TrainerServiceImpl implements TrainerService {
     public Trainer createTrainer(Trainer trainer) {
         return trainerRepository.save(trainer);
     }
+
+    @Override
+    public void deleteTrainer(String name) {
+        trainerRepository.deleteById(name);
+    }
+
 }
