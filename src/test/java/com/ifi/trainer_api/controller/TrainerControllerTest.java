@@ -83,5 +83,31 @@ public class TrainerControllerTest {
         assertArrayEquals(new String[]{"/"}, postMapping.value());
     }
 
+    @Test
+    void deleteTrainer_shouldBeAnnotated() throws NoSuchMethodException {
+        var deleteTrainer = TrainerController.class.getDeclaredMethod("deleteTrainer", String.class);
+        var deleteMapping = deleteTrainer.getAnnotation(DeleteMapping.class);
+
+        var pathVariableAnnotation = deleteTrainer.getParameters()[0].getAnnotation(PathVariable.class);
+
+        assertNotNull(deleteMapping);
+        assertArrayEquals(new String[]{"/{name}"}, deleteMapping.value());
+        assertNotNull(pathVariableAnnotation);
+
+    }
+
+    @Test
+    void updateTrainer_shouldBeAnnotated() throws NoSuchMethodException {
+        var updateTrainer = TrainerController.class.getDeclaredMethod("updateTrainer", String.class, Trainer.class);
+        var putMapping = updateTrainer.getAnnotation(PutMapping.class);
+
+        var pathVariableAnnotation = updateTrainer.getParameters()[0].getAnnotation(PathVariable.class);
+
+        assertNotNull(putMapping);
+        assertArrayEquals(new String[]{"/{name}"}, putMapping.value());
+        assertNotNull(pathVariableAnnotation);
+
+    }
+
 
 }

@@ -1,9 +1,6 @@
 package com.ifi.trainer_api.bo;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -11,6 +8,9 @@ public class Trainer {
 
     @Id
     private String name;
+
+    @Column
+    private String password;
 
     @ElementCollection
     private List<Pokemon> team;
@@ -37,5 +37,13 @@ public class Trainer {
 
     public void setTeam(List<Pokemon> team) {
         this.team = team;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

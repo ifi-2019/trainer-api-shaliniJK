@@ -29,7 +29,12 @@ public class TrainerController {
         return trainerService.createTrainer(trainer);
     }
 
-    @DeleteMapping("/name")
+    @PutMapping("/{name}")
+    Trainer updateTrainer(@PathVariable String name, @RequestBody Trainer trainerDetails) {
+        return trainerService.updateTrainer(name, trainerDetails);
+    }
+
+    @DeleteMapping("/{name}")
     void deleteTrainer(@PathVariable String name) {
         trainerService.deleteTrainer(name);
     }
