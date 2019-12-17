@@ -42,4 +42,19 @@ public class TrainerServiceImpl implements TrainerService {
         trainerRepository.deleteById(name);
     }
 
+    @Override
+    public Trainer updateTrainer(String name, Trainer trainerDetails) {
+        Optional<Trainer> trainerOptional = trainerRepository.findById(name);
+        if (trainerOptional.isPresent()) {
+            Trainer trainer = trainerOptional.get();
+            trainer.setName(trainerDetails.getName());
+            trainer.setTeam(trainerDetails.getTeam());
+
+            return trainerRepository.save(trainer);
+        } else {
+            return null;
+        }
+    }
+
+
 }
