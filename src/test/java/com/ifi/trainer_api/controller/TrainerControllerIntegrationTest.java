@@ -7,6 +7,7 @@ import com.ifi.trainer_api.bo.Trainer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +49,29 @@ class TrainerControllerIntegrationTest {
     private static JSONObject bugCatcherJSONObject;
 
     private static HttpHeaders headers;
+
+    @Before
+    void init() throws JSONException {
+        headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        bugCatcherJSONObject = new JSONObject();
+        bugCatcherJSONObject.put("name", "Bug Catcher");
+
+        JSONArray teams = new JSONArray();
+
+        JSONObject json = new JSONObject();
+        json.put("pokemonType", 13)
+                .put("level", 6);
+
+        JSONObject json2 = new JSONObject();
+        json2.put("pokemonType", 10)
+                .put("level", 6);
+
+        teams.put((Object) json);
+        teams.put((Object) json2);
+        bugCatcherJSONObject.put("team", (Object) teams);
+    }
 
     @Test
     void trainerController_shouldBeInstanciated(){
@@ -135,28 +159,54 @@ class TrainerControllerIntegrationTest {
     @Test
     void updateTrainer_withNameBugCatcher_shouldReturnBugCatcher() throws JSONException {
 
+        /*headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        bugCatcherJSONObject = new JSONObject();
+        bugCatcherJSONObject.put("name", "Bug Catcher");
+
+        JSONArray teams = new JSONArray();
+
+        JSONObject json = new JSONObject();
+        json.put("pokemonType", 13)
+                .put("level", 6);
+
+        JSONObject json2 = new JSONObject();
+        json2.put("pokemonType", 10)
+                .put("level", 6);
+
+        teams.put((Object) json);
+        teams.put((Object) json2);
+        bugCatcherJSONObject.put("team", (Object) teams);*/
+
+        HttpEntity<String> request = new HttpEntity<>(bugCatcherJSONObject.toString(), headers);
+
+        Trainer bugcatcher = this.restTemplate
+                .withBasicAuth(username, password)
+                .postForObject("http://localhost:" + port + "/trainers/", request, Trainer.class);
+
         Trainer trainer = new Trainer();
         trainer.setName("Super Bug Catcher");
 
-        HttpEntity<Trainer> request = new HttpEntity<>(trainer, headers);
+        HttpEntity<Trainer> request2 = new HttpEntity<>(trainer, headers);
 
         this.restTemplate
                 .withBasicAuth(username, password)
-                .exchange("http://localhost:" + port + "/trainers/Bug+Catcher", HttpMethod.PUT, request, Trainer.class, trainer.getName());
+                .exchange("http://localhost:" + port + "/trainers/Bug+Catcher", HttpMethod.PUT, request2, Trainer.class, trainer.getName());
 
-        var bugcatcher = this.restTemplate
+        var bugcatcher2 = this.restTemplate
                 .withBasicAuth(username, password)
                 .getForObject("http://localhost:" + port + "/trainers/Bug+Catcher", Trainer.class);
 
-        assertNull(bugcatcher);
+        assertNull(bugcatcher2);
 
-        /*var superbugcatcher = this.restTemplate
+        var superbugcatcher = this.restTemplate
                 .withBasicAuth(username, password)
                 .getForObject("http://localhost:" + port + "/trainers/Super+Bug+Catcher", Trainer.class);
 
         assertNotNull(superbugcatcher);
 
-        assertEquals("Super Bug Catcher", superbugcatcher.getName());
+        /*assertEquals("Super Bug Catcher", superbugcatcher.getName());
         assertEquals(2, superbugcatcher.getTeam().size());
 
         assertEquals(13, bugcatcher.getTeam().get(0).getPokemonType());
