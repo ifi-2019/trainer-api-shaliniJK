@@ -1,14 +1,9 @@
 package com.ifi.trainer_api.controller;
 
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ifi.trainer_api.bo.Trainer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,29 +45,6 @@ class TrainerControllerIntegrationTest {
 
     private static HttpHeaders headers;
 
-    @Before
-    void init() throws JSONException {
-        headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        bugCatcherJSONObject = new JSONObject();
-        bugCatcherJSONObject.put("name", "Bug Catcher");
-
-        JSONArray teams = new JSONArray();
-
-        JSONObject json = new JSONObject();
-        json.put("pokemonType", 13)
-                .put("level", 6);
-
-        JSONObject json2 = new JSONObject();
-        json2.put("pokemonType", 10)
-                .put("level", 6);
-
-        teams.put((Object) json);
-        teams.put((Object) json2);
-        bugCatcherJSONObject.put("team", (Object) teams);
-    }
-
     @Test
     void trainerController_shouldBeInstanciated(){
         assertNotNull(controller);
@@ -95,45 +67,42 @@ class TrainerControllerIntegrationTest {
         assertNotNull(ash);
         assertEquals("Ash", ash.getName());
         assertEquals(1, ash.getTeam().size());
-
         assertEquals(25, ash.getTeam().get(0).getPokemonType());
         assertEquals(18, ash.getTeam().get(0).getLevel());
     }
 
     @Test
     void getAllTrainers_shouldReturnAshAndMisty() {
-
         var trainers = this.restTemplate
                 .withBasicAuth(username, password)
                 .getForObject("http://localhost:" + port + "/trainers/", Trainer[].class);
 
-
         assertNotNull(trainers);
         assertEquals(2, trainers.length);
-
         assertEquals("Ash", trainers[0].getName());
         assertEquals("Misty", trainers[1].getName());
     }
 
     @Test
     void createTrainer_withNameBugCatcher_shouldReturnBugCatcher() throws JSONException {
+        var nullBugCatcher = this.restTemplate
+                .withBasicAuth(username, password)
+                .getForObject("http://localhost:" + port + "/trainers/Bug Catcher", Trainer.class);
+
+        assertNull(nullBugCatcher);
 
         headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         bugCatcherJSONObject = new JSONObject();
         bugCatcherJSONObject.put("name", "Bug Catcher");
-
         JSONArray teams = new JSONArray();
-
         JSONObject json = new JSONObject();
         json.put("pokemonType", 13)
                 .put("level", 6);
-
         JSONObject json2 = new JSONObject();
         json2.put("pokemonType", 10)
                 .put("level", 6);
-
         teams.put((Object) json);
         teams.put((Object) json2);
         bugCatcherJSONObject.put("team", (Object) teams);
@@ -144,95 +113,74 @@ class TrainerControllerIntegrationTest {
                 .withBasicAuth(username, password)
                 .postForObject("http://localhost:" + port + "/trainers/", request, Trainer.class);
 
-        assertNotNull(bugcatcher);
+        var createdBugCatcher = this.restTemplate
+                .withBasicAuth(username, password)
+                .getForObject("http://localhost:" + port + "/trainers/Bug Catcher", Trainer.class);
 
-        assertEquals("Bug Catcher", bugcatcher.getName());
-        assertEquals(2, bugcatcher.getTeam().size());
-
-        assertEquals(13, bugcatcher.getTeam().get(0).getPokemonType());
-        assertEquals(6, bugcatcher.getTeam().get(0).getLevel());
-
-        assertEquals(10, bugcatcher.getTeam().get(1).getPokemonType());
-        assertEquals(6, bugcatcher.getTeam().get(1).getLevel());
+        assertNotNull(createdBugCatcher);
+        assertEquals(createdBugCatcher.getName(), bugcatcher.getName());
+        assertEquals(createdBugCatcher.getTeam().size(), bugcatcher.getTeam().size());
+        assertEquals(createdBugCatcher.getTeam().get(0).getPokemonType(), bugcatcher.getTeam().get(0).getPokemonType());
+        assertEquals(createdBugCatcher.getTeam().get(0).getLevel(), bugcatcher.getTeam().get(0).getLevel());
+        assertEquals(createdBugCatcher.getTeam().get(1).getPokemonType(), bugcatcher.getTeam().get(1).getPokemonType());
+        assertEquals(createdBugCatcher.getTeam().get(1).getLevel(), bugcatcher.getTeam().get(1).getLevel());
     }
 
     @Test
     void updateTrainer_withNameBugCatcher_shouldReturnBugCatcher() throws JSONException {
-
-        /*headers = new HttpHeaders();
+        headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        bugCatcherJSONObject = new JSONObject();
-        bugCatcherJSONObject.put("name", "Bug Catcher");
-
-        JSONArray teams = new JSONArray();
-
-        JSONObject json = new JSONObject();
-        json.put("pokemonType", 13)
-                .put("level", 6);
-
-        JSONObject json2 = new JSONObject();
-        json2.put("pokemonType", 10)
-                .put("level", 6);
-
-        teams.put((Object) json);
-        teams.put((Object) json2);
-        bugCatcherJSONObject.put("team", (Object) teams);*/
-
-        HttpEntity<String> request = new HttpEntity<>(bugCatcherJSONObject.toString(), headers);
-
+        String bugCatcherJSON = "{\"name\": \"Bug Catcher\",\"team\": [{\"pokemonType\": 13, \"level\": 6},{\"pokemonType\": 10, \"level\": 6}]}";
+        HttpEntity<String> request = new HttpEntity<>(bugCatcherJSON, headers);
         Trainer bugcatcher = this.restTemplate
                 .withBasicAuth(username, password)
                 .postForObject("http://localhost:" + port + "/trainers/", request, Trainer.class);
 
-        Trainer trainer = new Trainer();
-        trainer.setName("Super Bug Catcher");
+        assertNotNull(bugcatcher);
 
-        HttpEntity<Trainer> request2 = new HttpEntity<>(trainer, headers);
+        String newBugCatcherJSON = "{\"name\": \"Bug Catcher\",\"team\": [{\"pokemonType\": 13, \"level\": 7},{\"pokemonType\": 10, \"level\": 7}]}";
+        HttpEntity<String> request2 = new HttpEntity<String>(newBugCatcherJSON, headers);
 
         this.restTemplate
                 .withBasicAuth(username, password)
-                .exchange("http://localhost:" + port + "/trainers/Bug+Catcher", HttpMethod.PUT, request2, Trainer.class, trainer.getName());
+                .exchange("http://localhost:" + port + "/trainers/Bug Catcher", HttpMethod.PUT, request2, Trainer.class);
 
-        var bugcatcher2 = this.restTemplate
+        var newBugCatcher = this.restTemplate
                 .withBasicAuth(username, password)
-                .getForObject("http://localhost:" + port + "/trainers/Bug+Catcher", Trainer.class);
+                .getForObject("http://localhost:" + port + "/trainers/Bug Catcher", Trainer.class);
 
-        assertNull(bugcatcher2);
+        assertNotNull(newBugCatcher);
 
-        var superbugcatcher = this.restTemplate
-                .withBasicAuth(username, password)
-                .getForObject("http://localhost:" + port + "/trainers/Super+Bug+Catcher", Trainer.class);
-
-        assertNotNull(superbugcatcher);
-
-        /*assertEquals("Super Bug Catcher", superbugcatcher.getName());
-        assertEquals(2, superbugcatcher.getTeam().size());
-
-        assertEquals(13, bugcatcher.getTeam().get(0).getPokemonType());
-        assertEquals(6, bugcatcher.getTeam().get(0).getLevel());
-
-        assertEquals(10, bugcatcher.getTeam().get(1).getPokemonType());
-        assertEquals(6, bugcatcher.getTeam().get(1).getLevel());*/
-
+        assertEquals("Bug Catcher", newBugCatcher.getName());
+        assertEquals(2, newBugCatcher.getTeam().size());
+        assertEquals(13, newBugCatcher.getTeam().get(0).getPokemonType());
+        assertEquals(7, newBugCatcher.getTeam().get(0).getLevel());
+        assertEquals(10, newBugCatcher.getTeam().get(1).getPokemonType());
+        assertEquals(7, newBugCatcher.getTeam().get(1).getLevel());
     }
 
     @Test
     void deleteTrainer_withNameBugCatcher_shouldBeOk() throws JSONException {
+        headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        String bugCatcherJSON = "{\"name\": \"Bug Catcher\",\"team\": [{\"pokemonType\": 13, \"level\": 6},{\"pokemonType\": 10, \"level\": 6}]}";
+        HttpEntity<String> request = new HttpEntity<>(bugCatcherJSON, headers);
+        Trainer bugcatcher = this.restTemplate
+                .withBasicAuth(username, password)
+                .postForObject("http://localhost:" + port + "/trainers/", request, Trainer.class);
+
+        assertNotNull(bugcatcher);
 
        this.restTemplate
                 .withBasicAuth(username, password)
-                .delete("http://localhost:" + port + "/trainers/Super+Bug+Catcher");
+                .delete("http://localhost:" + port + "/trainers/Bug Catcher");
 
-        var bugcatcher = this.restTemplate
+        bugcatcher = this.restTemplate
                 .withBasicAuth(username, password)
-                .getForObject("http://localhost:" + port + "/trainers/Super+Bug+Catcher", Trainer.class);
+                .getForObject("http://localhost:" + port + "/trainers/Bug Catcher", Trainer.class);
 
         assertNull(bugcatcher);
-
     }
-
-
-
-
 }
